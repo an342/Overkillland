@@ -7,6 +7,7 @@ public class FollowChar : MonoBehaviour {
     [SerializeField]
     GameObject Cube;
 	// Use this for initialization
+
 	void Start () 
     {
 
