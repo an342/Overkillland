@@ -9,22 +9,34 @@ public class FireRaycast : MonoBehaviour
     [SerializeField] GameObject Player;
     [SerializeField] LayerMask mask;
     [SerializeField] GameObject hitEffect;
+    [SerializeField] GameObject hitEffect2;
+    [SerializeField] GameObject hitEffect3;
+    [SerializeField] GameObject hitEffect4;
     [SerializeField] float RoF;
     [SerializeField] string[] Weapons;
     [SerializeField] string equipped;
+    private int equippedNum = 0;
+    [SerializeField] int[] ammo;
+    [SerializeField] int[] ammoMAX;
+    public TextMesh ammoDisplay;
+    AudioSource audio;
     private float timer;
     private bool semiHold;
+    
 
 	void Start () 
     {
         mask = LayerMask.GetMask("Wall");
+        equipped = "Pistol";
+        equippedNum = 0;
         timer = 0;
+        audio = GetComponent<AudioSource>();
 	}
 	
 	// Update is called once per frame
 	void Update () 
     {
-
+        ammoDisplay.text = ammo[equippedNum].ToString();
 	}
      
     void FixedUpdate()
@@ -35,21 +47,38 @@ public class FireRaycast : MonoBehaviour
             switch (equipped)
             {
                 case "Pistol":
-                    FirePistol();
+                    if (ammo[0] > 0)
+                        FirePistol();
+                    else
+                        Debug.Log("Out of Ammo");
                     break;
                 case "MG":
-                    StartCoroutine(FireMG());
+                    if (ammo[1] > 0)
+                        StartCoroutine(FireMG());
+                    else
+                        Debug.Log("Out of Ammo");
                     break;
                 case "Chain":
-                    StartCoroutine(FireChaingun());
+                    if(ammo[2] > 0)
+                        StartCoroutine(FireChaingun());
+                    else
+                        Debug.Log("Out of Ammo");
                     break;
                 case "Burst":
-                    StartCoroutine(FireBurst());
+                    if(ammo[3] > 0)
+                        StartCoroutine(FireBurst());
+                    else
+                        Debug.Log("Out of Ammo");
                     break;
                 default:
                     Debug.Log("No weapon equipped!");
                     break;
             }
+        }
+
+        if (Input.GetButtonDown("Triangle"))
+        {
+            ChangeWeapon();
         }
         /*if (Input.GetButtonUp("R2"))
         {
@@ -63,10 +92,11 @@ public class FireRaycast : MonoBehaviour
         Debug.Log("fire MG");
         RoF = 0.5f;
         //timer > RoF
-        while(Input.GetButton("R2"))
+        while (Input.GetButton("R2") && !Input.GetButton("Triangle"))
         {
             Debug.Log("fireing MG");
             FireBullet();
+            ammo[1]--;
             //timer = 0;
             yield return new WaitForSeconds(RoF);
         }
@@ -79,12 +109,13 @@ public class FireRaycast : MonoBehaviour
         RoF = 0.5f;
         int count = 0;
         //timer > RoF
-        while (Input.GetButton("R2"))
+        while (Input.GetButton("R2") && !Input.GetButton("Triangle"))
         {
             while (count < 3)
             {
                 Debug.Log("pow");
                 FireBullet();
+                ammo[3]--;
                 count++;
                 yield return new WaitForSeconds(0.1f);
             }
@@ -99,32 +130,22 @@ public class FireRaycast : MonoBehaviour
     IEnumerator SemiAuto( float RoF)
     {
         Debug.Log("SemiAuto");
-        while(semiHold)
+        while (semiHold )
         {
             semiHold = false;
             yield return new WaitForSeconds(RoF);
         }
     }
 
-    /*
-    void FirePistol()
-    {
-        Debug.Log("fire pistol");
-        Debug.Log("semihold: " + semiHold);
-        if (timer > RoF && !semiHold)
-        {
-            FireBullet();
-            timer = 0;
-            semiHold = true;
-        }
-    }*/
+
     void FirePistol()
     {
         RoF = 0.5f;
-        Debug.Log("fire pistol");
-        if(!semiHold)
+        Debug.Log("fire pistol" );
+        if (!semiHold && !Input.GetButton("Triangle"))
         {
             FireBullet();
+            ammo[0]--;
             StartCoroutine(SemiAuto(RoF));
         }
     }
@@ -133,27 +154,56 @@ public class FireRaycast : MonoBehaviour
         Debug.Log("fire bullet");
         RaycastHit hit;
         Vector3 fwd = Player.transform.forward;
-        if (Physics.Raycast(transform.position, fwd, out hit, 25, mask.value) )
+        audio.Play();
+        if (Physics.Raycast(transform.position, fwd, out hit, 35) )
         {
             Debug.Log("i hit: " + hit.transform.name + " : " + hit.point);
+            if(hit.transform.tag == "Enemy")
+            {
+                Damage(hit.transform.gameObject, 15);
+            }
             Instantiate(hitEffect, hit.point, Quaternion.identity);
         }
     }
     IEnumerator FireChaingun()
     {
         Debug.Log("fire chain");
-        RoF = 0.02f;
+        RoF = 0.05f;
         //timer > RoF
-        while (Input.GetButton("R2"))
+        while (Input.GetButton("R2") )
         {
             FireBullet();
+            ammo[2]--;
             //timer = 0;
             yield return new WaitForSeconds(RoF);
         }
     }
     void ChangeWeapon()
     {
+        switch (equipped)
+        {
+            case "Pistol":
+                equipped = "MG";
+                equippedNum = 1;
+                break;
+            case "MG":
+                equipped = "Burst";
+                equippedNum = 3;
+                break;
+            case "Burst":
+                equipped = "Pistol";
+                equippedNum = 0;
+                break;
+            default:
+                Debug.Log("No weapon equipped!");
+                break;
+        }
+    }
 
+    void Damage(GameObject target, int damage)
+    {
+        Debug.Log("dealing damage");
+        target.GetComponent<SkeletonControler>().HP = target.GetComponent<SkeletonControler>().HP - damage;
     }
  }
 

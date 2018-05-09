@@ -6,6 +6,8 @@ public class FollowChar : MonoBehaviour {
 
     [SerializeField]
     GameObject Cube;
+    [SerializeField]
+    Vector3 offest;
 	// Use this for initialization
 
 	void Start () 
@@ -16,6 +18,6 @@ public class FollowChar : MonoBehaviour {
 	// Update is called once per frame
 	void Update () 
     {
-        transform.position = Cube.transform.position;
+        transform.position = Cube.transform.position + offest;
 	}
 }

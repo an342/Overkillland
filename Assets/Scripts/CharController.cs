@@ -22,7 +22,7 @@ public class CharController : MonoBehaviour {
 
     // Player Stats
     public  float   HP;
-    public  Text    HPText;
+    public  TextMesh HPText;
     public  float   MaxHP;
     public  float   moveSpeed = 4f;
     public  float   engery;
@@ -70,9 +70,9 @@ public class CharController : MonoBehaviour {
             }
         }
         
-        if (Input.GetButton("Triangle"))
+        if (Input.GetButton("Cross"))
         {
-            Debug.Log("Hit Triangle");
+            Debug.Log("Hit Cross");
             StartCoroutine(HealthKit());
         }
         
@@ -113,7 +113,7 @@ public class CharController : MonoBehaviour {
     {
         while (HP > 0)
         {
-            HPText.text = "HP: " + HP + "/" + MaxHP;
+            HPText.text = "HP: " + HP;
             yield return new WaitForSeconds(.5f);
         }
     }
